@@ -1,7 +1,15 @@
 {
-  "name": "hardhat-project",
+  "name": "auditing-smart-contracts",
+  "dependencies": {
+    "@chainlink/contracts": "^0.7.1",
+    "@openzeppelin/contracts": "^4.5.0"
+  },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
-    "hardhat": "^2.17.3"
+    "@nomiclabs/hardhat-ethers": "^2.0.5",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "chai": "^4.3.10",
+    "ethereum-waffle": "^4.0.10",
+    "ethers": "^5.6.1",
+    "hardhat": "^2.12.7"
   }
 }

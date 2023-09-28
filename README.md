@@ -1,14 +1,15 @@
-# Auditing Smart Contracts
+# Auditing-Smart-Contracts
 
-Welcome to the Auditing Smart Contracts repository. This project is dedicated to ensuring the security and reliability of blockchain-based applications by performing comprehensive audits of smart contracts. The primary goal is to identify vulnerabilities, enforce best practices, and enhance trust and transparency in decentralized systems.
+Welcome to the `Auditing-Smart-Contracts` repository. This project is dedicated to ensuring the security and reliability of blockchain-based applications by performing comprehensive audits of smart contracts. The primary goal is to identify vulnerabilities, enforce best practices, and enhance trust and transparency in decentralized systems.
 
 ## Table of Contents
 
+- [Verification and Security](#verification-and-security)
+- [Commented Code](#commented-code)
 - [Features](#features)
 - [Getting Started](#getting-started)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Usage](#usage)
+- [Smart Contract Auditing](#smart-contract-auditing)
+- [Pitfalls Test](#pitfalls-test)
 - [Contributing](#contributing)
 - [License](#license)
 - [Future Updates](#future-updates)
@@ -23,7 +24,7 @@ Each modification to this project undergoes a meticulous verification process an
 
 ## Features
 
-- **Smart Contract Auditing**: In-depth analysis of Solidity smart contracts to uncover security vulnerabilities and issues.
+- **Smart Contract Auditing**: In-depth analysis of Solidity smart contracts to uncover security vulnerabilities and issues. 
 - **Best Practices Enforcement**: Ensure adherence to industry best practices and coding standards.
 - **Report Generation**: Generate detailed audit reports with findings, recommendations, and mitigation strategies.
 - **Blockchain Compatibility**: Support for auditing contracts on various blockchain platforms (e.g., Ethereum, Binance Smart Chain).
@@ -33,39 +34,38 @@ Each modification to this project undergoes a meticulous verification process an
 
 To explore and interact with the Aave Flash Loan Contract, follow these steps:
 
-1. Ensure you have Node.js and hardhat and npm installed in your environment.
+1. Ensure you have Node.js and Hardhat and npm installed in your environment.
 
 2. Clone this repository to your local machine.
 
 3. Install the necessary dependencies by running the following command in your terminal:
 
-```bash
+   ```bash
    npm install
-```
+   ```
 
-4. Run a pitfalls test:
+## Smart Contract Auditing
+
+In this project, we will be covering the 5 most common pitfalls that auditors find in their audits:
+  - Missing input or precondition checks.
+  - Phishing vulnerabilities with transactions origin.
+  - Incorrect calculation of output token amount.
+  - Timestamp manipulation.
+  - Block gas limit vulnerabilities.
+
+**Will be updated soon**
+
+## Pitfalls Test
+
+To Run a pitfalls test:
 
 ```bash
-   npx hardhat test
+npx hardhat test
 ```
-
-## Usage
-
-1. Deploy the smart contract you want to audit to your development environment or testnet.
-
-2. Configure the auditing tool with the contract address and other relevant parameters.
-
-3. Run the auditing tool:
-
-```bash
-   npm run audit
-```
-
-4. Review the generated audit report for findings and follow the recommended mitigation strategies.
 
 ## Contributing
 
-Contributions are welcome! Please follow our [Contribution Guidelines](CONTRIBUTING.md) for more information on how to contribute to this project.
+Contributions to this project are welcome and encouraged. If you identify any bugs, have feature requests, or would like to improve the project, please open an issue or submit a pull request. We appreciate your interest and contributions.
 
 ## License
 
