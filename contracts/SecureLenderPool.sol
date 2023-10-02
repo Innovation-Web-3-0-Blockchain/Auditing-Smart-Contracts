@@ -1,36 +1,31 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.0;
 
-// Import the Chainlink VRFConsumerBase contract.
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-
-// Import the OpenZeppelin ReentrancyGuard contract for preventing reentrancy attacks.
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-
-// Import the Hardhat console library for debugging
 import "hardhat/console.sol";
 
-// Interface for a contract that can receive flash loans
+// Interface for a contract that can receive flash loans in Ether
 interface IFlashLoanEtherReceiver {
     function execute(uint256 fee) external payable;
 }
 
-// Main contract, inherits from VRFConsumerBase and ReentrancyGuard
+// The main contract
 contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
-    uint256 public feePercent = 1; // The fee percentage for flash loans
-    uint256 positionAmount = 1 ether / 4; // The amount for each position
+    uint256 public feePercent = 1; // Fee percentage charged on flash loans
+    uint256 positionAmount = 1 ether / 4; // Amount of Ether per position
     uint256 public positionCount; // Total number of positions
     bytes32 internal keyHash; // Chainlink VRF key hash
     uint256 internal fee; // Chainlink VRF fee
-    uint256 public randomResult; // The result of the random number generation
-    address public owner; // Owner of the contract
+    uint256 public randomResult; // Result of the Chainlink VRF randomness request
+    address public owner; // Address of the contract owner
 
-    // Mapping to track the positions of each user
+    // Mapping from user address to an array of their position IDs
     mapping(address => uint256[]) public positionLocations;
-    // Mapping to associate positions with depositors
+
+    // Mapping from position ID to depositor address
     mapping(uint256 => address) public positionToDepositor;
 
-    // Constructor to initialize the contract with Chainlink VRF settings
     constructor()
         VRFConsumerBase(
             0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9, // VRF Coordinator
@@ -39,48 +34,59 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
     {
         keyHash = 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4;
         fee = 0.1 * 10**18; // 0.1 LINK
-        owner = msg.sender; // Set the contract owner
+        owner = msg.sender; // Set the contract owner to the deployer
     }
 
-    // Function to set the fee percentage (only callable by the owner)
+    // Function to set the fee percentage, can only be called by the owner
     function setFeePercent(uint256 _percent) external {
         require(msg.sender == owner, "Only owner");
         feePercent = _percent;
     }
 
-    // Function to deposit funds into the contract
+    // Function to deposit Ether into the contract
     function deposit() external payable nonReentrant {
-        require(msg.value <= 100 ether, "Can't deposit more than 100 ether at a time");
+        require(
+            msg.value <= 100 ether,
+            "Can't deposit more than 100 ether at a time"
+        );
         require(msg.value > 0, "Deposit must be greater than zero");
-        require(msg.value % positionAmount == 0, "Deposit value must be an interval of the interval amount");
-
+        require(
+            msg.value % positionAmount == 0,
+            "Error, deposit value must be an interval of the interval amount"
+        );
         uint256 _positionCount = positionCount;
         uint256 _deposits;
-
-        // Loop to handle multiple deposits
         while (_deposits < msg.value / positionAmount) {
             _deposits++;
             positionLocations[msg.sender].push(_positionCount + _deposits);
             positionToDepositor[_positionCount + _deposits] = msg.sender;
         }
-
         positionCount += _deposits;
     }
 
-    // Function to withdraw funds from the contract
+    // Function to withdraw Ether from the contract
     function withdraw(uint256 _amountOfPositions) external nonReentrant {
-        require(_amountOfPositions <= positionLocations[msg.sender].length, "Insufficient deposit balance");
+        require(
+            _amountOfPositions <= positionLocations[msg.sender].length,
+            "Insufficient deposit balance"
+        );
         uint256 _positionCount = positionCount;
 
-        uint256[] memory _positions = new uint256[](positionLocations[msg.sender].length);
+        uint256[] memory _positions = new uint256[](
+            positionLocations[msg.sender].length
+        );
+
         _positions = positionLocations[msg.sender];
 
-        // Loop to shift positions when withdrawing
         for (uint256 i = 0; i < _amountOfPositions; i++) {
             address shiftedAddr = positionToDepositor[_positionCount - i];
             uint256 shift = _positions[_positions.length - (1 + i)];
             positionToDepositor[shift] = shiftedAddr;
-            for (uint256 j = 0; j < positionLocations[shiftedAddr].length; j++) {
+            for (
+                uint256 j = 0;
+                j < positionLocations[shiftedAddr].length;
+                j++
+            ) {
                 if (positionLocations[shiftedAddr][j] == _positionCount - i) {
                     positionLocations[shiftedAddr][j] = shift;
                     break;
@@ -88,9 +94,10 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
             }
         }
 
-        uint256[] memory _remainingPositions = new uint256[](_positions.length - _amountOfPositions);
+        uint256[] memory _remainingPositions = new uint256[](
+            _positions.length - _amountOfPositions
+        );
 
-        // Copy the remaining positions
         for (uint256 i = 0; i < _remainingPositions.length; i++) {
             _remainingPositions[i] = _positions[i];
         }
@@ -99,7 +106,9 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
         positionCount -= _amountOfPositions;
 
         // Transfer Ether to the user
-        (bool sent, ) = payable(msg.sender).call{ value: _amountOfPositions * positionAmount }("");
+        (bool sent, ) = payable(msg.sender).call{
+            value: _amountOfPositions * positionAmount
+        }("");
         require(sent, "Failed to send Ether");
     }
 
@@ -114,26 +123,33 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
     }
 
     // Function to initiate a flash loan
-    function flashLoan(address borrowingContract, uint256 amount) external nonReentrant {
-        require(LINK.balanceOf(address(this)) > fee, "Not enough LINK - fill contract with faucet");
+    function flashLoan(address borrowingContract, uint256 amount)
+        external
+        nonReentrant
+    {
+        require(
+            LINK.balanceOf(address(this)) > fee,
+            "Not enough LINK - fill contract with faucet"
+        );
         uint256 balanceBefore = address(this).balance;
         require(balanceBefore >= amount, "Not enough ETH in balance");
 
         // Get a random number from Chainlink VRF
         requestRandomness(keyHash, fee);
 
-        // Calculate the fee for the flash loan
+        // Get the fee for the flash loan
         uint256 _fee = getFee(amount);
 
         // Lend funds to the receiving contract
-        IFlashLoanEtherReceiver(borrowingContract).execute{ value: amount }(_fee);
-
-        // Check if the contract balance increased by the fee amount
-        require(address(this).balance >= balanceBefore + _fee, "Flash loan hasn't been paid back");
+        IFlashLoanEtherReceiver(borrowingContract).execute{value: amount}(_fee);
+        require(
+            address(this).balance >= balanceBefore + _fee,
+            "Flash loan hasn't been paid back"
+        );
 
         // Pay the fee to one of the depositors randomly
-        // We get the lucky depositor using the positionToDeposit mapping, looking up the depositor at a random position.
-        payable(positionToDepositor[(randomResult % positionCount) + 1]).transfer(_fee);
+        payable(positionToDepositor[(randomResult % positionCount) + 1])
+            .transfer(_fee);
     }
 
     /**
@@ -143,6 +159,6 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
         randomResult = randomness;
     }
 
-    // Fallback function to receive Ether (required to receive fees)
+    // Required to receive Ether
     receive() external payable {}
 }

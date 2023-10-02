@@ -1,33 +1,36 @@
-VulnerableLenderPool.sol
-
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
 
+// Interface for a contract that can receive flash loans
 interface IFlashLoanEtherReceiver {
     function execute(uint256 fee) external payable;
 }
 
+// Main contract - VulnerableLenderPool
 contract VulnerableLenderPool {
-    uint256 public feePercent = 1;
-    uint256 positionAmount = 1 ether / 4;
-    uint256 public positionCount;
-    address public owner;
-    // address -> array that contains where users positions are located in the positionToDepositor mapping
+    uint256 public feePercent = 1; // The fee percentage for flash loans
+    uint256 positionAmount = 1 ether / 4; // The amount for each position
+    uint256 public positionCount; // Total number of positions
+    address public owner; // Owner of the contract
+
+    // Mapping to track the positions of each user
     mapping(address => uint256[]) public positionLocations;
-    // position -> depositor
+    // Mapping to associate positions with depositors
     mapping(uint256 => address) public positionToDepositor;
 
     constructor() {
         owner = msg.sender;
     }
 
+    // Function to set the fee percentage (only callable by the owner)
     function setFeePercent(uint256 _percent) external {
         require(tx.origin == owner, "Only owner");
         feePercent = _percent;
     }
 
+    // Function to deposit funds into the contract
     function deposit() external payable {
         require(msg.value > 0, "Deposit must be greater than zero");
         uint256 _positionCount = positionCount;
@@ -40,10 +43,9 @@ contract VulnerableLenderPool {
         positionCount += _deposits;
     }
 
+    // Function to withdraw funds from the contract
     function withdraw(uint256 _amountOfPositions) external {
-        // transfer ether
-        console.log(address(this).balance);
-        console.log(positionAmount);
+        // Transfer Ether to the caller
         (bool sent, ) = payable(msg.sender).call{
             value: _amountOfPositions * positionAmount
         }("");
@@ -85,38 +87,45 @@ contract VulnerableLenderPool {
         positionCount -= _amountOfPositions;
     }
 
+    // Function to get the balance of a depositor
     function getBalance(address _depositor) external view returns (uint256) {
         return (positionLocations[_depositor].length * positionAmount);
     }
 
+    // Function to calculate the fee for a flash loan
     function getFee(uint256 _borrowAmount) public view returns (uint256) {
         return (_borrowAmount * (feePercent / 100));
     }
 
+    // Function to initiate a flash loan
     function flashLoan(address borrowingContract, uint256 amount) external {
         uint256 balanceBefore = address(this).balance;
         require(balanceBefore >= amount, "Not enough ETH in balance");
-        // Get fee the correct way. getFee function is incorrect
+
+        // Calculate the fee for the flash loan
         uint256 _fee = (amount * feePercent) / 100;
-        // Lend funds to recieving contract
+
+        // Execute the flash loan
         IFlashLoanEtherReceiver(borrowingContract).execute{value: amount}(_fee);
+
         require(
             address(this).balance >= balanceBefore + _fee,
             "Flash loan hasn't been paid back"
         );
+
+        // Generate a random number
         bytes32 result = keccak256(
             abi.encodePacked(
                 uint256(block.difficulty),
                 uint256(block.timestamp)
             )
         );
-
         uint256 randomNumber = uint256(result) % positionCount;
-        // Pay fee to one of the depositors.
-        // We get the lucky depositer using the positionToDeposit mapping, looking up the depositor at a random position.
+
+        // Pay the fee to one of the depositors at random
         payable(positionToDepositor[randomNumber + 1]).transfer(_fee);
     }
 
-    // Required to receieve fees
+    // Required to receive fees
     receive() external payable {}
 }
