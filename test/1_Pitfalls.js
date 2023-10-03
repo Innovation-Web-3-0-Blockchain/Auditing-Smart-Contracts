@@ -65,4 +65,18 @@ describe("Common solidity pitfalls", function () {
     // matches the newly deposited amount, ensuring precise tracking of balances.
     expect(await securePool.getBalance(deployer.address)).to.equal(newDepositAmount);
   });
+
+  // Test case: Phishing vulnerability with tx.origin
+  it("Phishing vulnerability with tx.origin", async function () {
+    // Attacker tricks the owner of the vulnerable pool into calling a phishing malicious contract.
+    // This action allows the malicious contract to act on the deployer's behalf
+    // and set the fee percent on their lender pool to 100%.
+    await attack.phishing(0);
+    expect(await vulnerablePool.feePercent()).to.equal(100);
+
+    // Attacker attempts the same phishing attack on the secure pool,
+    // but it should fail because the set fee function in the secure pool
+    // uses msg.sender to authenticate instead of tx.origin.
+    await expect(attack.phishing(1)).to.be.revertedWith("Only owner");
+  });
 });

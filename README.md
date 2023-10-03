@@ -44,6 +44,8 @@ To explore and interact with the Aave Flash Loan Contract, follow these steps:
 
 In this scenario, a group of developers submitted the `VulnerableLenderPool.sol` contract to an auditing firm for evaluation. The auditing firm conducted a thorough review and produced a comprehensive report highlighting all the vulnerabilities present in the `VulnerableLenderPool.sol` contract. Subsequently, the identified vulnerabilities were addressed and patched in an enhanced version of the contract, known as `SecureLenderPool.sol`. This improved contract is designed to eliminate the security weaknesses and enhance the overall security of the lending pool.
 
+For a clearer understanding of the contents of each contracts, please consult our [Auditing Project Documentation](CONTRACTS.md).
+
 ## Features
 
 ### Smart Contract Auditing
@@ -56,7 +58,7 @@ In-depth analysis of Solidity smart contracts to uncover security vulnerabilitie
   - Timestamp manipulation.
   - Block gas limit vulnerabilities.
 
-For a more comprehensive understanding of the vulnerabilities, their potential corrections, and the possible actions that a malicious actor can take, please refer to our [Project Documentation](DOCS.md).
+For a more comprehensive understanding of the vulnerabilities and the possible actions that a malicious actor can take, please refer to our [Auditing Project Documentation](VULNERABILITIES.md).
 
 ### Best Practices Enforcement 
 
