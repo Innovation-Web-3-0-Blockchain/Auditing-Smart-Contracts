@@ -1,7 +1,7 @@
 
 ---
 
-## VulnerableLenderPool.sol Contract Vulnerabilities
+## VulnerableLenderPool.sol Contract
 
 The `VulnerableLenderPool.sol` contract presents several critical vulnerabilities that could be exploited by malicious actors to compromise the integrity of the contract and potentially inflict financial harm on users. These vulnerabilities and their associated risks are as follows:
 
@@ -47,7 +47,7 @@ The `VulnerableLenderPool.sol` contract presents several critical vulnerabilitie
 
 ## Attack.sol Malicious Contract
 
-The "Attack" contract you've provided demonstrates an attacker exploiting vulnerabilities in a lending pool contract on behalf of the owner. Here's an explanation of what the attacker can do using this contract:
+The `Attack.sol` contract you've provided demonstrates an attacker exploiting vulnerabilities in a lending pool contract on behalf of the owner. Here's an explanation of what the attacker can do using this contract:
 
 1. **Phishing Attack:**
    - The `phishing` function allows the attacker to set the fee percentage of a specified pool to 100%.
@@ -60,7 +60,7 @@ The "Attack" contract you've provided demonstrates an attacker exploiting vulner
    - The vulnerability here is that the attacker can potentially withdraw funds from the pool, even if they don't have any positions in it.
    - The attacker can repeatedly trigger this fallback function to drain funds from the affected pool, causing a loss of funds for legitimate users.
 
-In summary, this "Attack" contract demonstrates two critical vulnerabilities in the lending pool contract:
+In summary, this `Attack.sol` contract demonstrates two critical vulnerabilities in the lending pool contract:
 
 1. **Fee Manipulation Vulnerability:** The attacker can manipulate the fee percentage of a pool to impose excessive fees on flash loans, rendering them unattractive to borrowers.
 

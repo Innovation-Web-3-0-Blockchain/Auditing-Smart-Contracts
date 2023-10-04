@@ -79,4 +79,18 @@ describe("Common solidity pitfalls", function () {
     // uses msg.sender to authenticate instead of tx.origin.
     await expect(attack.phishing(1)).to.be.revertedWith("Only owner");
   });
+
+    // Test case: Incorrect calculation of output token amount
+  it("Incorrect calculation of output token amount", async function () {
+    const tokenAmount = ethers.utils.parseEther("100");
+
+    // Call the vulnerable pool's getFee function with a token amount of 100.
+    // It's expected to return 0 because of an incorrect order of operations in the calculation (dividing then multiplying).
+    expect(await vulnerablePool.getFee(tokenAmount)).to.equal(0);
+
+    // Call the secure pool's getFee function with a token amount of 100.
+    // It's expected to return the correct fee amount of 1 ether
+    // because it calculates it with the correct order of operations (multiplying then dividing).
+    expect(await securePool.getFee(tokenAmount)).to.equal(ethers.utils.parseEther("1"));
+  });
 });

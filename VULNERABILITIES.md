@@ -1,3 +1,6 @@
+
+---
+
 ## Missing Input or Precondition Checks
 
 Missing input or precondition checks are crucial safeguards that validate the information and conditions provided by users before executing any financial transactions. These checks confirm that borrowers and lenders meet the necessary requirements and provide accurate data, preventing malicious or erroneous actions within the pool.
@@ -18,10 +21,11 @@ Missing input or precondition checks are crucial safeguards that validate the in
 
 These checks are integral to the security and reliability of a lender pool smart contract, safeguarding the interests of all participants and reducing the potential for exploits or unintended consequences.
 
+---
 
 ## Phishing Vulnerabilities With Transactions Origin
 
-Phishing vulnerability with transactions origin" refers to a security weakness that arises when a contract relies on the `tx.origin` property to determine the sender of a transaction. This vulnerability can be exploited by malicious actors to impersonate legitimate users and perform unauthorized actions within the contract.
+Phishing vulnerability with transactions origin refers to a security weakness that arises when a contract relies on the `tx.origin` property to determine the sender of a transaction. This vulnerability can be exploited by malicious actors to impersonate legitimate users and perform unauthorized actions within the contract.
 
 **Understanding:**
 
@@ -31,4 +35,49 @@ Phishing vulnerability with transactions origin" refers to a security weakness t
 
 3. **Impersonation and Unauthorized Actions:** By manipulating `tx.origin`, attackers can impersonate legitimate users or even contract addresses, making the vulnerable contract believe that the malicious contract is actually the legitimate user. This can lead to unauthorized actions, such as fund transfers, changes in contract state, or other malicious activities.
 
+4. **VulnerableLenderPool.sol:**
+
+```solidity
+// Vulnerable code snippet
+function setFeePercent(uint256 _percent) external {
+    require(tx.origin == owner, "Only owner");
+    feePercent = _percent;
+}
+```
+
+In this vulnerable code snippet, the `setFeePercent` function is designed to allow only the contract owner to update the `feePercent` value. It checks the `tx.origin` to verify that the transaction initiator is the owner. However, relying on `tx.origin` for access control can introduce a phishing vulnerability.
+
+The vulnerability arises from the fact that `tx.origin` returns the address of the external account that initiated the transaction, rather than the address of a contract calling the function. This makes the contract susceptible to phishing attacks. An attacker can deploy a malicious contract that calls `setFeePercent`, and because the `tx.origin` will be the attacker's external address, the requirement check will pass, allowing the attacker to change the `feePercent` value.
+
 Smart contract developers must use `msg.sender` and robust access controls to prevent attackers from manipulating `tx.origin` and impersonating users or contracts, preventing unauthorized actions.
+
+---
+
+## Incorrect Calculation Of Output Token Amount
+
+Incorrect calculation of tutput token amount vulnerability refers to a situation in a smart contract where the calculation of output token amounts during a transaction is done incorrectly or improperly. This can lead to unexpected and potentially harmful outcomes, such as loss of funds or unintended transfers.
+
+**Common Causes:**
+
+1. **Mathematical Errors:** Errors in mathematical operations within the contract code can result in the incorrect calculation of token amounts. For example, a mistake in dividing or multiplying values can lead to imprecise results.
+
+2. **External Data Dependency:** Smart contracts often depend on external data sources, such as price feeds or user inputs. If these external data sources are manipulated or unreliable, it can lead to incorrect token amount calculations.
+
+3. **VulnerableLenderPool.sol:**
+
+```solidity
+// Vulnerable code snippet
+function getFee(uint256 _borrowAmount) public view returns (uint256) {
+    return (_borrowAmount * (feePercent / 100));
+}
+```
+
+In this vulnerable code snippet, the `getFee` function attempts to calculate a fee based on a percentage (`feePercent`) of the `_borrowAmount`. However, there is a vulnerability in the calculation because the division operation `(feePercent / 100)` is performed with integer division in Solidity, which truncates the result. If `feePercent` is not a multiple of 100, this can lead to incorrect fee calculations.
+
+For example, if `feePercent` is 3 (indicating a 3% fee), the result of `(3 / 100)` will be 0 instead of 0.03. As a result, the fee calculation will always be zero, which is incorrect.
+
+In this example, the function `calculateTokenAmount` does not use safe math operations, making it susceptible to overflow vulnerabilities when `inputAmount` or `rate` is sufficiently large.
+
+Vigilance in identifying and mitigating this vulnerability is crucial for ensuring the integrity of decentralized applications.
+
+---

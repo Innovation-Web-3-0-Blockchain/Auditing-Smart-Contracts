@@ -10,10 +10,6 @@ Welcome to the `Auditing-Smart-Contracts` repository. This project is dedicated 
 - [Scenario](#scenario)
 - [Features](#features)
   - [Smart Contract Auditing](#smart-contract-auditing)
-  - [Best Practices Enforcement](#best-practices-enforcement)
-  - [Report Generation](#report-generation)
-  - [Blockchain Compatibility](#blockchain-compatibility)
-  - [Continuous Improvement](#continuous-improvement)
 - [Contributing](#contributing)
 - [License](#license)
 - [Future Updates](#future-updates)
@@ -60,27 +56,11 @@ In-depth analysis of Solidity smart contracts to uncover security vulnerabilitie
 
 For a more comprehensive understanding of the vulnerabilities and the possible actions that a malicious actor can take, please refer to our [Auditing Project Documentation](VULNERABILITIES.md).
 
-### Best Practices Enforcement 
-
-Ensure adherence to industry best practices and coding standards.
-
-### Report Generation
-
-Generate detailed audit reports with findings, recommendations, and mitigation strategies.
-
-### Blockchain Compatibility 
-
-Support for auditing contracts on various blockchain platforms (e.g., Ethereum, Binance Smart Chain).
-
-### Continuous Improvement
-
-Regular updates and enhancements to adapt to evolving security threats.
-
-//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 **Will be updated soon**
 
-//////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ## Contributing
 
