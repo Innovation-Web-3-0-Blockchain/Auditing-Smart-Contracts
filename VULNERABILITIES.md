@@ -81,3 +81,38 @@ In this example, the function `calculateTokenAmount` does not use safe math oper
 Vigilance in identifying and mitigating this vulnerability is crucial for ensuring the integrity of decentralized applications.
 
 ---
+
+## Timestamp Manipulation 
+
+Timestamp manipulation vulnerability refers to a situation in a smart contract where the usage of the `block.timestamp` for generating randomness or making decisions is susceptible to manipulation by miners or malicious actors. This can lead to unfair outcomes, security risks, and potentially harmful consequences.
+
+**Root Causes:**
+
+1. **Miner Manipulation:** Miners can adjust the `block.timestamp` to some extent when they create a block. This adjustment allows them to influence the outcome of functions or conditions that rely on timestamps.
+
+2. **Dependence on `block.timestamp`:** Contracts that heavily rely on `block.timestamp` for decision-making, randomness generation, or time-based conditions are more susceptible to this vulnerability.
+
+3. **Lack of Secure Randomness:** Failure to use a secure and tamper-resistant source of randomness in the contract can lead to timestamp manipulation vulnerabilities.
+
+**VulnerableLenderPool.sol:**
+
+```solidity
+// Vulnerable code snippet
+function getRandomRecipient(uint256 _fee) public {
+    // Generate a random number
+    bytes32 result = keccak256(
+        abi.encodePacked(
+            uint256(block.difficulty),
+            uint256(block.timestamp)
+        )
+    );
+    uint256 randomNumber = uint256(result) % positionCount;
+
+    // Pay the fee to one of the depositors at random
+    payable(positionToDepositor[randomNumber + 1]).transfer(_fee);
+}
+```
+
+In this vulnerable code snippet, the `getRandomRecipient` function attempts to generate randomness using `block.timestamp`. However, this is problematic because miners can manipulate the timestamp to their advantage, potentially influencing the selection of the recipient for the fee payment.
+
+Addressing this vulnerability is crucial for maintaining the fairness and security of decentralized applications that depend on random or time-based processes.

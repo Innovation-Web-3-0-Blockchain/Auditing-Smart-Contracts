@@ -93,4 +93,76 @@ describe("Common solidity pitfalls", function () {
     // because it calculates it with the correct order of operations (multiplying then dividing).
     expect(await securePool.getFee(tokenAmount)).to.equal(ethers.utils.parseEther("1"));
   });
+
+  // Test case: Timestamp manipulation
+  // NOTE: This vulnerability work only with PoW
+  it("Timestamp manipulation", async function () {
+    // user1 deposits 1 ether into their receiver contract
+    await user1.sendTransaction({ to: receiver.address, value: ethers.utils.parseEther("1") });
+
+    // Deployer deposits 1.5 ether into the vulnerablePool contract
+    await vulnerablePool.deposit({ value: ethers.utils.parseEther("1.5") });
+
+    // Miner deposits the minimum amount of 0.25 ether into the vulnerablePool
+    await (await vulnerablePool.connect(miner).deposit({ value: ethers.utils.parseEther(".25") })).wait();
+
+    // Get the current balance of the vulnerablePool contract
+    const poolBalance = await ethers.provider.getBalance(vulnerablePool.address);
+
+    // Get the total number of positions in the vulnerablePool
+    const positionCount = await vulnerablePool.positionCount();
+
+    // Get the block difficulty for the block that will include the flash loan transaction
+    let difficulty = 132608;
+
+    // Get the information about the latest Ethereum block
+    let block = await ethers.provider.getBlock("latest");
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  //                                                                                              //
+  //    Due to the average block production rate of approximately one block every 15 seconds,     //
+  //    miners who successfully solve the cryptographic puzzle for a block have the opportunity   //
+  //    to choose from 15 different timestamp values. This allows them to generate 15 distinct    //
+  //    random numbers. If one of these random numbers happens to select their 7th position       //
+  //    to receive the fee, they can intentionally publish the block with the timestamp that      //
+  //    generated that specific number. As a result, the miner significantly increases their      //
+  //    chances (by a factor of 15) of receiving the fee. This method of fee distribution is      //
+  //    inherently unfair to depositors.                                                          //
+  //                                                                                              //
+  //    In contrast, the secure pool ensures fair fee distribution by utilizing Chainlink's       //
+  //    verified randomness, which provides a random number that is independent of the block's    //
+  //    timestamp. This eliminates the miner's ability to manipulate fee distribution in their    //
+  //    favor.                                                                                    //
+  //                                                                                              //
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Loop 15 times to simulate different block timestamps
+  for (let i = 1; i <= 15; i++) {
+    // Generate a hash using block difficulty and an adjusted timestamp
+    const hash = ethers.utils.solidityKeccak256(["uint256", "uint256"], [difficulty, block.timestamp + i])
+    const number = ethers.BigNumber.from(hash).mod(positionCount)
+    
+    if (number.toNumber() + 1 == positionCount.toNumber()) {
+      // Increase the Ethereum Virtual Machine (EVM) timestamp by 'i' seconds
+      await ethers.provider.send("evm_increaseTime", [i]);
+
+      // Get the initial Ethereum balance of the miner
+      const initEthBalance = await miner.getBalance();
+
+      // Execute a flash loan transaction
+      const tx = await vulnerablePool.connect(deployer).flashLoan(receiver.address, poolBalance);
+      await tx.wait();
+
+      // Get the final Ethereum balance of the miner
+      const finalEthBalance = await miner.getBalance();
+      
+      // Check if the miner's balance increased by the expected fee amount using Chai's expect
+      const expectedFee = ethers.BigNumber.from('17500000000000000');
+      expect(finalEthBalance.sub(initEthBalance)).to.equal(expectedFee);
+
+      // Exit the loop since the condition is met
+      break;
+     }
+    }
+  });
 });
