@@ -1,15 +1,19 @@
+# Contracts 
+
+- [VulnerableLenderPool Contract](#vulnerablelenderpool-contract)
+- [Attack Contract](#attack-contract)
+- [SecureLenderPool Contract](#securelenderpool-contract)
+- [Pitfalls Test](#pitfalls-test)
 
 ---
 
-## VulnerableLenderPool.sol Contract
+## VulnerableLenderPool Contract 
 
 The `VulnerableLenderPool.sol` contract presents several critical vulnerabilities that could be exploited by malicious actors to compromise the integrity of the contract and potentially inflict financial harm on users. These vulnerabilities and their associated risks are as follows:
 
 1. **Lack of Access Control:**
    - **Vulnerability:** The contract doesn't have proper access control mechanisms for critical functions like setting the fee percentage (`setFeePercent`). It relies on the `tx.origin` check, which is outdated and insecure.
    - **Potential Exploit:** An attacker can potentially call the `setFeePercent` function by manipulating the `tx.origin`, taking control of the fee percentage, and potentially siphoning off funds. 
-
-   See `Attack.sol` contract for an example of a malicious contract that can be called on the behalf of the owner.
 
 2. **Reentrancy Vulnerability:**
    - **Vulnerability:** The `flashLoan` function doesn't follow the Checks-Effects-Interactions pattern, making it susceptible to reentrancy attacks.
@@ -45,40 +49,33 @@ The `VulnerableLenderPool.sol` contract presents several critical vulnerabilitie
 
 ---
 
-## Attack.sol Malicious Contract
+## Attack Contract
 
-The `Attack.sol` contract you've provided demonstrates an attacker exploiting vulnerabilities in a lending pool contract on behalf of the owner. Here's an explanation of what the attacker can do using this contract:
+The `Attack.sol` contract is used to exploit vulnerabilities in the `VulnerableLenderPool.sol` contract on behalf of the owner. Here's a breakdown of the functions and components of this contract:
 
-1. **Phishing Attack:**
-   - The `phishing` function allows the attacker to set the fee percentage of a specified pool to 100%.
-   - An attacker can initiate this function, affecting the pool's fee structure.
-   - The impact is that all future flash loans from the affected pool would incur a 100% fee, effectively making them non-profitable for borrowers.
+1. **Pool Interface**:
+   - This contract defines an interface called `Pool` that other contracts can use to interact with pool contracts. The interface includes several functions that can be called on pool contracts.
 
-2. **Fallback Function Attack:**
-   - The `fallback` function receives Ether sent to the "Attack" contract and exploits a potential vulnerability in the pool contracts.
-   - The attacker checks if the sender is the address of pool 0 or pool 1 and withdraws 1 unit of positions from the selected pool if it has a non-zero balance.
-   - The vulnerability here is that the attacker can potentially withdraw funds from the pool, even if they don't have any positions in it.
-   - The attacker can repeatedly trigger this fallback function to drain funds from the affected pool, causing a loss of funds for legitimate users.
+2. **Attack Contract**:
+   - The main contract in this code is called `Attack`. It is intended to interact with instances of the `VulnerableLenderPool.sol` contract.
+   
+3. **Constructor**:
+   - The constructor of the `Attack.sol` contract takes an array of two `Pool` instances as an argument and initializes the `pools` array with these instances.
 
-In summary, this `Attack.sol` contract demonstrates two critical vulnerabilities in the lending pool contract:
+4. **Phishing Function**:
+   - The `phishing` function is designed to perform a phishing attack on one of the pool contracts. It takes an argument `_type` which determines which pool to target.
+   - Inside the function, it sets the fee percentage of the specified pool to 100%.
 
-1. **Fee Manipulation Vulnerability:** The attacker can manipulate the fee percentage of a pool to impose excessive fees on flash loans, rendering them unattractive to borrowers.
-
-2. **Unauthorized Withdrawal Vulnerability:** The attacker can exploit a vulnerability in the pool's withdrawal mechanism to drain funds from the pool, potentially causing financial losses to users.
-
----
-
-## Pitfalls Test
-
-To Run a pitfalls test:
-
-```bash
-npx hardhat test
-```
+5. **Fallback Function**:
+   - The `receive` function is a fallback function that is triggered when the contract receives ETH.
+   - It first declares a local variable `_pool` of type `Pool`.
+   - It checks if the sender of the transaction is the address of pool 0. If yes, it assigns the instance of pool 0 to `_pool`. Otherwise, it assigns the instance of pool 1.
+   - It then checks if the balance of the selected pool is greater than zero, and if so, it attempts to withdraw 1 unit of positions from the selected pool.
+   - It allows the contract to withdraw from the selected pool if there are funds available.
 
 ---
 
-## SecureLenderPool.sol Contract Security Enhancements
+## SecureLenderPool Contract
 
 The `SecureLenderPool.sol` contract represents a significant enhancement in the security and functionality of the flash loan lending pool in comparison to its vulnerable predecessor. The following key improvements have been implemented to fortify the contract's security posture:
 
@@ -106,6 +103,14 @@ The `SecureLenderPool.sol` contract represents a significant enhancement in the 
 8. **Fallback Function Update:**
    - The fallback function now checks if there are positions to withdraw before attempting to transfer Ether to the user, preventing unnecessary transfers.
 
-`SecureLenderPool.sol` introduces a multitude of security enhancements to mitigate vulnerabilities identified in `VulnerableLenderPool.sol`. These enhancements encompass improved random number generation, access controls, equitable fee distribution, and the implementation of best security practices, collectively fostering a more secure and reliable flash loan lending pool. These measures significantly reduce the potential for exploits and instill confidence in the security of the contract.
+---
+
+## Pitfalls Test
+
+To Run a pitfalls test:
+
+```bash
+npx hardhat test test/Pitfalls.js
+```
 
 ---

@@ -1,3 +1,14 @@
+# Audit Report 
+
+---
+
+## Pitfalls
+
+- [Missing Input or Precondition Checks](#missing-input-or-precondition-checks)
+- [Phishing Vulnerabilities With Transactions Origin](#phishing-vulnerabilities-with-transactions-origin)
+- [Incorrect Calculation Of Output Token Amount](#incorrect-calculation-of-output-token-amount)
+- [Timestamp Manipulation](#timestamp-manipulation)
+- [Block Gas Limit](#block-gas-limit)
 
 ---
 
@@ -114,3 +125,40 @@ function getRandomRecipient(uint256 _fee) public {
 In this vulnerable code snippet, the `getRandomRecipient` function attempts to generate randomness using `block.timestamp`. However, this is problematic because miners can manipulate the timestamp to their advantage, potentially influencing the selection of the recipient for the fee payment.
 
 Addressing this vulnerability is crucial for maintaining the fairness and security of decentralized applications that depend on random or time-based processes.
+
+---
+
+## Block Gas Limit
+
+A block gas limit vulnerability in a smart contract refers to a situation where the gas required to execute a transaction that interacts with the contract exceeds the maximum gas limit set for a block on the Ethereum blockchain. This can result in transaction failures, reverts, or potential exploits by malicious actors.
+
+**Issues:**
+
+1. **Excessive Gas Consumption:** Contracts with inefficient or computationally expensive operations may consume more gas than is available in a single Ethereum block, leading to transaction failures.
+
+2. **Infinite Loops:** Smart contracts that contain loops without proper exit conditions or gas constraints can cause transactions to run indefinitely, eventually hitting the gas limit.
+
+3. **Large Data Operations:** Contracts that manipulate or process large amounts of data can exceed the gas limit due to the high computational cost of these operations.
+
+**VulnerableLenderPool.sol:**
+
+```solidity
+// Vulnerable code snippet
+function deposit() external payable {
+    require(msg.value > 0, "Deposit must be greater than zero");
+    uint256 _positionCount = positionCount;
+    uint256 _deposits;
+    while (_deposits < msg.value / positionAmount) {
+        _deposits++;
+        positionLocations[msg.sender].push(_positionCount + _deposits);
+        positionToDepositor[_positionCount + _deposits] = msg.sender;
+    }
+    positionCount += _deposits;
+}
+```
+
+In this vulnerable code snippet, the `deposit` function allows users to deposit funds into the contract. However, it contains a `while` loop that iterates based on the value of `msg.value / positionAmount`. If `msg.value` is substantial, this loop may execute a large number of times, potentially consuming more gas than the Ethereum block gas limit allows, leading to transaction failures.
+
+It is essential to optimize the contract code, reduce gas consumption, and consider implementing gas limits or constraints on loop iterations to ensure that transactions remain within the gas limits imposed by the Ethereum network. This helps maintain the reliability and security of the contract.
+
+---
