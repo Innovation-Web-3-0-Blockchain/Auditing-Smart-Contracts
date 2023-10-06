@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "hardhat/console.sol";
+// Import necessary external contracts
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol"; // Chainlink VRF integration
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol"; // Reentrancy protection
+import "hardhat/console.sol"; // Debugging console
 
 // Interface for a contract that can receive flash loans in Ether
 interface IFlashLoanEtherReceiver {
@@ -12,6 +13,7 @@ interface IFlashLoanEtherReceiver {
 
 // The main contract
 contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
+    // Public state variables
     uint256 public feePercent = 1; // Fee percentage charged on flash loans
     uint256 positionAmount = 1 ether / 4; // Amount of Ether per position
     uint256 public positionCount; // Total number of positions
@@ -26,6 +28,7 @@ contract SecureLenderPool is VRFConsumerBase, ReentrancyGuard {
     // Mapping from position ID to depositor address
     mapping(uint256 => address) public positionToDepositor;
 
+    // Constructor function
     constructor()
         VRFConsumerBase(
             0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9, // VRF Coordinator

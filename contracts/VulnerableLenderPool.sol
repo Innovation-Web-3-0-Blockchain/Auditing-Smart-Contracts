@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// Import for debugging console
 import "hardhat/console.sol";
 
 // Interface for a contract that can receive flash loans
@@ -10,6 +11,7 @@ interface IFlashLoanEtherReceiver {
 
 // Main contract - VulnerableLenderPool
 contract VulnerableLenderPool {
+    // Public state variables
     uint256 public feePercent = 1; // The fee percentage for flash loans
     uint256 positionAmount = 1 ether / 4; // The amount for each position
     uint256 public positionCount; // Total number of positions
@@ -20,8 +22,9 @@ contract VulnerableLenderPool {
     // Mapping to associate positions with depositors
     mapping(uint256 => address) public positionToDepositor;
 
+    // Constructor
     constructor() {
-        owner = msg.sender;
+        owner = msg.sender; // Set the contract owner to the deployer
     }
 
     // Function to set the fee percentage (only callable by the owner)

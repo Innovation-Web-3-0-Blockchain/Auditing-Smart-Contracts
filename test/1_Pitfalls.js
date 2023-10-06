@@ -95,7 +95,7 @@ describe("Common solidity pitfalls", function () {
   });
 
   // Test case: Timestamp manipulation
-  // NOTE: This vulnerability work only with PoW
+  // NOTE: This exploit works nonly with PoW
   it("Timestamp manipulation", async function () {
     // user1 deposits 1 ether into their receiver contract
     await user1.sendTransaction({ to: receiver.address, value: ethers.utils.parseEther("1") });
@@ -157,7 +157,7 @@ describe("Common solidity pitfalls", function () {
       const finalEthBalance = await miner.getBalance();
       
       // Check if the miner's balance increased by the expected fee amount using Chai's expect
-      const expectedFee = ethers.BigNumber.from('17500000000000000');
+      const expectedFee = ethers.BigNumber.from('');
       expect(finalEthBalance.sub(initEthBalance)).to.equal(expectedFee);
 
       // Exit the loop since the condition is met
@@ -165,4 +165,60 @@ describe("Common solidity pitfalls", function () {
      }
     }
   });
-});
+
+// Calculate gas estimates for various deposit amounts and test gas limits
+it("Block gas limit vulnerabilities", async function () {
+  // Gas estimation for a 50 ETH deposit
+  let estimate = await ethers.provider.estimateGas({
+    // Address of the contract to interact with
+    to: vulnerablePool.address,
+
+    // Data specifying the function to call (deposit function)
+    data: "0xd0e30db0",
+
+    // Amount to send with the transaction (50 ETH)
+    value: ethers.utils.parseEther("50")
+  });
+
+  // Log the gas estimate for a 50 ETH deposit
+  console.log("Gas price for 50 ETH deposit", estimate.toNumber());
+
+  // Gas estimation for a 100 ETH deposit
+  estimate = await ethers.provider.estimateGas({
+    to: vulnerablePool.address,
+    data: "0xd0e30db0",
+    value: ethers.utils.parseEther("100")
+  });
+
+  // Log the gas estimate for a 100 ETH deposit
+  console.log("Gas price for 100 ETH deposit", estimate.toNumber());
+
+  // Gas estimation for a 150 ETH deposit
+  estimate = await ethers.provider.estimateGas({
+    to: vulnerablePool.address,
+    data: "0xd0e30db0",
+    value: ethers.utils.parseEther("150")
+  });
+
+  // Log the gas estimate for a 150 ETH deposit
+  console.log("Gas price for 150 ETH deposit", estimate.toNumber());
+
+  ///////////////////////////////////////////////////////////////////////////////////////////
+  //                                                                                       //
+  //    In this section, we're testing the gas limits of the contract by estimating        //
+  //    the gas required for different deposit amounts. The goal is to ensure that         //
+  //    the contract doesn't consume an excessive amount of gas, which could lead          //
+  //    to out-of-gas errors. If the contract allows unlimited deposits, it's important    //
+  //    to set reasonable limits to prevent such issues.                                   //
+  //                                                                                       //
+  //    Additionally, we check if attempting to deposit more than 100 ETH into the         //
+  //    secure pool triggers a revert, as the secure pool has a limit of 100 ETH           //
+  //    per deposit to prevent potential issues.                                           //
+  //                                                                                       //
+  ///////////////////////////////////////////////////////////////////////////////////////////
+
+    // Ensure that an attempt to deposit more than 100 ether into the securePool
+    // will result in a revert with the specified error message
+    await expect(securePool.deposit({ value: ethers.utils.parseEther("101") })).to.be.revertedWith("Can't deposit more than 100 ether at a time")
+   });
+  });

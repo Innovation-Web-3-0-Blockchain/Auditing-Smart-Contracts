@@ -99,7 +99,6 @@ Timestamp manipulation vulnerability refers to a situation in a smart contract w
 ```solidity
 // Vulnerable code snippet
 function getRandomRecipient(uint256 _fee) public {
-    // Generate a random number
     bytes32 result = keccak256(
         abi.encodePacked(
             uint256(block.difficulty),
@@ -108,7 +107,6 @@ function getRandomRecipient(uint256 _fee) public {
     );
     uint256 randomNumber = uint256(result) % positionCount;
 
-    // Pay the fee to one of the depositors at random
     payable(positionToDepositor[randomNumber + 1]).transfer(_fee);
 }
 ```

@@ -10,6 +10,7 @@ Welcome to the `Auditing-Smart-Contracts` repository. This project is dedicated 
 - [Scenario](#scenario)
 - [Features](#features)
   - [Smart Contract Auditing](#smart-contract-auditing)
+  - [Analysis Tools](#analysis-tools)
 - [Contributing](#contributing)
 - [License](#license)
 - [Future Updates](#future-updates)
@@ -55,6 +56,8 @@ In-depth analysis of Solidity smart contracts to uncover security vulnerabilitie
   - Block gas limit vulnerabilities.
 
 For a more comprehensive understanding of the vulnerabilities and the possible actions that a malicious actor can take, please refer to our [Auditing Project Documentation](VULNERABILITIES.md).
+
+### Analysis Tools
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
